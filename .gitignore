@@ -1,0 +1,18 @@
+__pycache__/
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.pyc
+
+# Local research datasets and generated run outputs can be restored from
+# datasets/manifest.csv or an external nir_test_dataset.zip archive.
+nir_test_dataset.zip
+data/real_input/pdf/*
+data/real_input/docx/*
+data/real_input/html/*
+data/real_input/bad_files/*
+data/real_input/duplicates/*
+data/output/*
+data/real_output/*
+data/edge_output/*

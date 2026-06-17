@@ -1,0 +1,43 @@
+digraph etl_architecture {
+  graph [
+    rankdir=LR,
+    bgcolor="white",
+    pad="0.3",
+    nodesep="0.45",
+    ranksep="0.55",
+    label="MVP ETL Architecture: User -> Input -> Ingest -> Extract -> Transform -> Validate -> Load -> Output",
+    labelloc="t",
+    fontsize=18,
+    fontname="DejaVu Sans"
+  ];
+
+  node [
+    shape=box,
+    style="rounded,filled",
+    color="#2F6F73",
+    fillcolor="#E8F1F2",
+    penwidth=1.4,
+    fontname="DejaVu Sans",
+    fontsize=12,
+    margin="0.12,0.08"
+  ];
+
+  edge [
+    color="#444444",
+    penwidth=1.2,
+    arrowsize=0.8,
+    fontname="DejaVu Sans"
+  ];
+
+  user [label="Пользователь\nCLI-запуск"];
+  input [label="Input\ndata/input"];
+  ingest [label="Ingest\npathlib + hashlib\nреестр и дубли"];
+  extract [label="Extract\nPDF/DOCX/HTML\nадаптеры"];
+  transform [label="Transform\nочистка + enrichment"];
+  validate [label="Validate\nPydantic + quality checks"];
+  load [label="Load\nJSON + CSV"];
+  output [label="Output\ndataset, metrics,\nlogs, charts"];
+
+  user -> input -> ingest -> extract -> transform -> validate -> load -> output;
+}
+
