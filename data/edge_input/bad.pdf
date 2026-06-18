@@ -37,7 +37,6 @@ Pipeline разделен на независимые этапы:
 | Validate | `src/validate.py`, `src/models.py` | Проверка схемы и качества |
 | Load | `src/load.py` | Сохранение JSON/CSV/ошибок |
 | Output | `data/output` | Результаты обработки |
-| Dataset manifest | `datasets/manifest.csv` | Реестр пилотного набора |
 
 ## Структура проекта
 
@@ -49,23 +48,10 @@ NIR_MVP/
   pyproject.toml
   data/
     input/
-    sample_input/
-    real_input/
-      pdf/
-      docx/
-      html/
-      bad_files/
-      duplicates/
     output/
-  datasets/
-    manifest.csv
-    README_DATASET.md
   reports/
     assets/
     experiment_summary.md
-  scripts/
-    collect_neerc_html.py
-    create_synthetic_docx_samples.py
   src/
     main.py
     config.py
@@ -94,21 +80,10 @@ pip install -r requirements.txt
 
 ## Входные данные
 
-Для быстрого демонстрационного запуска можно использовать:
+По умолчанию документы помещаются в:
 
 ```text
-data/sample_input/
-```
-
-Для пилотной проверки НИР используется официальный набор:
-
-```text
-data/real_input/
-  pdf/
-  docx/
-  html/
-  bad_files/
-  duplicates/
+data/input/
 ```
 
 Поддерживаются форматы:
@@ -119,20 +94,6 @@ data/real_input/
 - `.htm`
 
 Можно указать собственную папку через CLI.
-
-Описание набора и manifest находятся в `datasets/README_DATASET.md` и `datasets/manifest.csv`.
-
-HTML-страницы NEERC wiki можно собрать командой:
-
-```bash
-python scripts/collect_neerc_html.py --limit 20 --output data/real_input/html --manifest datasets/manifest.csv
-```
-
-Синтетические DOCX для проверки адаптера создаются командой:
-
-```bash
-python scripts/create_synthetic_docx_samples.py --output data/real_input/docx --manifest datasets/manifest.csv
-```
 
 ## Запуск MVP
 
@@ -154,18 +115,6 @@ python -m src.main \
 ```
 
 Конвейер выводит прогресс, не падает на одном плохом файле и сохраняет ошибки в `errors.json`.
-
-Пилотный запуск на официальном наборе:
-
-```bash
-python -m src.main \
-  --input data/real_input \
-  --output data/output/dataset_real.json \
-  --metrics-output data/output/metrics_real.json \
-  --log-output data/output/processing_log_real.csv \
-  --errors-output data/output/errors_real.json \
-  --pretty
-```
 
 ## Пример выходного JSON
 
@@ -199,14 +148,6 @@ python -m src.main \
       "char_count": 830,
       "has_formulas": true,
       "has_code": true,
-      "headings": ["Введение в машинное обучение"],
-      "embedded_metadata": {"title": "Введение в машинное обучение"},
-      "extractor_used": "BeautifulSoup",
-      "fallback_used": false,
-      "fallback_reason": null,
-      "duplicate_of": null,
-      "ingest_status": "ready",
-      "extractor_status": "success",
       "text": "очищенный текст",
       "extraction_status": "success",
       "validation_status": "success",
@@ -231,20 +172,11 @@ python -m src.main \
 - `files_per_second`
 - `average_words_per_document`
 - `metadata_completeness`
-- `metadata_completeness_common`
-- `metadata_completeness_format_specific`
-- `metadata_completeness_total`
 - `success_rate_by_format`
 - `average_processing_time_by_format`
 - `error_count_by_format`
 
-`metadata_completeness` теперь считается с учетом применимости полей:
-
-- `metadata_completeness_common`: универсальные поля `title`, `author`, `language`, `topic`, `difficulty`, `keywords`, `word_count`, `char_count`;
-- `metadata_completeness_format_specific`: форматно-зависимые поля, например `page_count` для PDF, `headings` для HTML/DOCX и `embedded_metadata`;
-- `metadata_completeness_total`: среднее между common и format-specific.
-
-Так HTML и DOCX не получают искусственный штраф за отсутствие `page_count`.
+`metadata_completeness` считается по заполненности `title`, `author`, `language`, `topic`, `difficulty`, `keywords`, `word_count`, `page_count`.
 
 ## Генерация графиков
 
@@ -271,7 +203,6 @@ pytest tests/
 ```
 
 Тесты проверяют SHA256, очистку текста, классификацию темы и сложности, Pydantic-валидацию и игнорирование неподдерживаемых форматов.
-Также добавлены e2e-проверки pipeline, HTML/DOCX extractors, плохого файла, дубликата и новых полей `extractor_used`, `fallback_used`, `headings`, `embedded_metadata`.
 
 ## Ограничения MVP
 
@@ -281,8 +212,6 @@ pytest tests/
 - Ключевые слова извлекаются через YAKE, а при недоступности YAKE используется частотный fallback.
 - Нет промышленной оркестрации и распределенной обработки.
 - Качество метаданных зависит от качества исходных документов.
-- Текущий официальный набор является пилотным: он превышает 60 файлов, но меньше 100 документов.
-- Часть DOCX сформирована синтетически для проверки типовых элементов учебных материалов.
 
 ## Дальнейшее развитие
 
@@ -296,8 +225,6 @@ pytest tests/
 - OCR для сканированных PDF.
 - ML/LLM для улучшения классификации темы и сложности.
 - Веб-интерфейс и интеграция с LMS.
-- Расширение пилотного набора до 100+ документов для более устойчивой статистики.
-- Веб-интерфейс на React для загрузки файлов, запуска pipeline, просмотра метрик, ошибок и документов.
 
 ## Исходные материалы проекта
 
@@ -307,3 +234,4 @@ pytest tests/
 - Document: https://docs.google.com/document/d/1OcbFDtuSBFjyi0qHaiE1txQUYjbjVokxsKlMlpnFybg/edit?usp=drive_link
 - Architecture: https://drive.google.com/file/d/1VwZalpSZW-iVNnJ-5dPCNLBSU6SgdrJy/view?usp=drive_link
 - Report: https://drive.google.com/file/d/1SwkcIK1MBBBKLW4DdfQ9V4OsTTT8C-oy/view?usp=drive_link
+

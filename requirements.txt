@@ -1,0 +1,13 @@
+pdfplumber
+PyPDF2
+python-docx
+beautifulsoup4
+lxml
+pydantic
+pandas
+matplotlib
+tqdm
+yake
+langdetect
+pytest
+
